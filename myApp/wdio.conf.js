@@ -4,20 +4,26 @@ var VisualRegressionCompare = require('wdio-visual-regression-service/compare');
 
 
 function getScreenshotPath(subFolder) {
-  return path.join(path.join(process.cwd(), 'screenshots', subFolder));
+  return path.join(path.join(__dirname, 'screenshots', subFolder));
 }
 
 function getScreenshotName(subFolder) {
   var basePath = getScreenshotPath(subFolder);
   return function(context) {
     var type = context.type;
-    var testName = context.test.title;
+    /**
+     * NOTE options.testName *must* be set when checkX methods are run in the
+     * step definitions
+     **/
+    var testName = context.options.testName;
     var browserVersion = parseInt(context.browser.version, 10);
     var browserName = context.browser.name;
+    var width = context.meta.width;
 
     return path
-      .join(basePath,
-        `${testName}_${type}_${browserName}_v${browserVersion}.png`);
+      .join(basePath, [
+        testName, width, type, browserName, browserVersion].join('-') +
+        '.png');
   };
 }
 
@@ -168,7 +174,7 @@ exports.config = {
       diffName: getScreenshotName('diff'),
       misMatchTolerance: 0.01,
     }),
-    viewportChangePause: 1750
+    viewportChangePause: 300
   },
 
     //

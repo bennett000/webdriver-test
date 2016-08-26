@@ -2,16 +2,36 @@ module.exports = function () {
   this.Then(/^The Screenshots Should Match$/, function (done) {
     // matching groups are passed as parameters to the step definition
 
-    // browser.checkViewport([]);
-    var output = browser.checkDocument([]);
+    var testName = 'example';
 
-    console.log('OUTPUT', output);
+    var outputs = browser.checkDocument( {
+      hide: [],
+      remove: [],
+      testName: testName,
+      widths: [320, 1024],
+    } );
 
-    if (output[0].isWithinMisMatchTolerance) {
-      done();
+    failures = outputs.reduce(function(errors, result) {
+      /**
+       * result: {
+       *   misMatchPercentage: number,
+       *   isWithinMisMatchTolerance: boolean,
+       *   isSameDimensions: boolean,
+       *   isExactSameImage: boolean,
+       * }
+       */
+      if (result.isWithinMisMatchTolerance) {
+        return errors;
+      } else {
+        return errors + testName + ' Image Mismatch: ' +
+          result.misMatchPercentage + ' ';
+      }
+    }, '');
+
+    if (failures) {
+      done(new Error(failures));
     } else {
-      done(new Error('Screenshots do not match: ' +
-        output[0].misMatchPercentage));
+      done();
     }
   });
 };
